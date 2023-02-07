@@ -13,13 +13,16 @@ public class ReminderBroadcast extends BroadcastReceiver {
   static String NOTIFICATION_CHANNEL = "OBSIDIAN_TASK_NOTIFICATIONS";
   @Override
   public void onReceive(Context context, Intent intent) {
+   // intent.getExtra
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context,NOTIFICATION_CHANNEL_ID)
       .setSmallIcon(R.drawable.ic_launcher_background)
       .setContentTitle("File changed!")
-      .setContentText("ez egy alma")
+      .setContentText(intent.getStringExtra(NOTIFICATION_CHANNEL))
       .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
+
+
     NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
-    notificationManagerCompat.notify(42, builder.build());
+    notificationManagerCompat.notify(intent.getIntExtra(NOTIFICATION_CHANNEL_ID, 42), builder.build());
   }
 }

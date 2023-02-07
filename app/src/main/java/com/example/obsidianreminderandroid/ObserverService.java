@@ -6,14 +6,25 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.os.FileObserver;
 import android.os.IBinder;
+import android.provider.MediaStore;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.example.obsidianreminderandroid.R;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ObserverService extends Service {
   public static final String CHANNEL_ID = "ForegroundServiceChannel";
@@ -23,6 +34,7 @@ public class ObserverService extends Service {
   public void onCreate() {
     super.onCreate();
   }
+  @RequiresApi(api = Build.VERSION_CODES.O)
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     Context context = this;
@@ -43,7 +55,10 @@ public class ObserverService extends Service {
     startForeground(1, notification);
     //do heavy work on a background thread
     //stopSelf();
-    directoryFileObserver = new DirectoryFileObserver("/storage/emulated/0/test/test", context);//"/storage/Documents/Test");
+
+    directoryFileObserver = new DirectoryFileObserver(Environment.getExternalStorageDirectory().toString()+ "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json", context);
+    ;//"/storage/Documents/Test");
+    System.out.println(Files.isDirectory(Paths.get(Environment.getExternalStorageDirectory().toString()+ "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json")));
     directoryFileObserver.startWatching();
     return START_NOT_STICKY;
   }
