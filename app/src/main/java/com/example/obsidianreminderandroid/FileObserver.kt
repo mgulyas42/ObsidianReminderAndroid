@@ -1,4 +1,4 @@
-package com.example.obisidanreminder
+package com.example.obsidianreminderandroid
 
 import android.R.attr.delay
 import android.annotation.SuppressLint
