@@ -10,10 +10,6 @@ public class Reminder {
   public LocalDateTime time;
   private Integer rowNumber;
 
-  public Reminder() {
-
-  }
-
   public Reminder(String title, LocalDateTime time, Integer rowNumber) {
     this.title = title;
     this.time = time;

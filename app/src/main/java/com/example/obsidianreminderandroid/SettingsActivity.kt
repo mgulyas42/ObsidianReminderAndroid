@@ -14,31 +14,28 @@ import androidx.preference.PreferenceFragmentCompat
 
 
 class SettingsActivity : AppCompatActivity() {
-  // var directoryFileObserver: DirectoryFileObserver? = null
   override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.settings_activity)
-        if (savedInstanceState == null) {
-            supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.settings, SettingsFragment())
-                    .commit()
-        }
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.settings_activity)
+    if (savedInstanceState == null) {
+      supportFragmentManager
+        .beginTransaction()
+        .replace(R.id.settings, SettingsFragment())
+        .commit()
+    }
+    supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-      //directoryFileObserver = DirectoryFileObserver("/storage/emulated/0/test/test");
-      //directoryFileObserver!!.startWatching();
-      val serviceIntent = Intent(this, ObserverService::class.java)
-      serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android")
-      ContextCompat.startForegroundService(this, serviceIntent)
-     verifyStoragePermissions(this)
+    val serviceIntent = Intent(this, ObserverService::class.java)
+    serviceIntent.putExtra("inputExtra", "Foreground Service Example in Android")
+    ContextCompat.startForegroundService(this, serviceIntent)
+    verifyStoragePermissions(this)
 
     val intent = Intent()
     intent.action = Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION
     val uri: Uri = Uri.fromParts("package", this.packageName, null)
     intent.data = uri
     startActivity(intent)
-    }
+  }
 
     class SettingsFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

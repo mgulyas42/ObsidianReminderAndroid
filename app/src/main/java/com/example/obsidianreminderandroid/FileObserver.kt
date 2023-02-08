@@ -5,11 +5,11 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Environment
 import android.os.FileObserver
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import com.google.gson.Gson
+import androidx.annotation.RequiresApi
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import java.io.Reader
@@ -21,9 +21,8 @@ import java.util.*
 
 
 class DirectoryFileObserver(path: String, var context: Context) : FileObserver(path, FileObserver.CLOSE_WRITE) {
-  var aboslutePath = "path to your directory"
+  var aboslutePath = "";
   var activeReminderManager = ActiveReminderManager;
-  var NOTIFICATION_CHANNEL_ID = "OBSIDIAN_TASK_NOTIFICATIONS_ID"
 
   init {
     aboslutePath = path
@@ -31,40 +30,17 @@ class DirectoryFileObserver(path: String, var context: Context) : FileObserver(p
 
   @SuppressLint("NewApi")
   override fun onEvent(event: Int, path: String?) {
-    Log.e("FileObserver: ", "File Created");
+    Log.e("FileObserver: ", "File has been changed!");
     cancelAllNotification();
-    // create Gson instance
     try {
-      val gson = GsonBuilder().registerTypeAdapter(
-        LocalDateTime::class.java,
-        JsonDeserializer<Any?> { json, typeOfT, context ->
-          LocalDateTime.parse(
-            json.asString,
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-          )
-        }).create()
-
-      val reader: Reader =
-        ///storage/0F04-3F0A/Documents/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json
-        Files.newBufferedReader(
-          Paths.get(
-            Environment.getExternalStorageDirectory()
-              .toString() + "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json"
-          )
-        );
-      //  Environment.getExternalStorageDirectory().toString()+ "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json"))
-      val data: ObsidianData = gson.fromJson(reader, ObsidianData::class.java)
-
-      println(data)
+      var data = getDataFromDataJSON();
       data.reminders.entries.forEach { it ->
         it.value.forEach { reminder ->
-          createNotification(reminder.time.hour,reminder.time.minute,reminder.title);
+          createNotification(reminder.time.hour, reminder.time.minute, reminder.title);
         }
       }
-      // close reader
-      reader.close()
     } catch (e: java.lang.Exception) {
-      println("No file exists" + e.toString());
+      throw e
     }
   }
     fun createNotification(hour: Int, minute: Int, text: String) {
@@ -91,5 +67,28 @@ class DirectoryFileObserver(path: String, var context: Context) : FileObserver(p
       pendingIntent.cancel();
     }
     this.activeReminderManager.list = ArrayList();
+  }
+
+  @RequiresApi(Build.VERSION_CODES.O)
+  fun getDataFromDataJSON(): ObsidianData {
+    val gson = GsonBuilder().registerTypeAdapter(
+      LocalDateTime::class.java,
+      JsonDeserializer<Any?> { json, typeOfT, context ->
+        LocalDateTime.parse(
+          json.asString,
+          DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        )
+      }).create()
+
+    val reader: Reader =
+      Files.newBufferedReader(
+        Paths.get(
+          Environment.getExternalStorageDirectory()
+            .toString() + "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json"
+        )
+      );
+    val data: ObsidianData = gson.fromJson(reader, ObsidianData::class.java)
+    reader.close();
+    return data;
   }
 }

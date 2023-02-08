@@ -38,9 +38,17 @@ public class ObserverService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     Context context = this;
-    String input = intent.getStringExtra("inputExtra");
-    // createNotificationChannel();
 
+    ensureNotificationChannelExists();
+    this.createForeGroundNotification(context);
+
+    directoryFileObserver = new DirectoryFileObserver(Environment.getExternalStorageDirectory().toString()+ "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json", context);
+    directoryFileObserver.startWatching();
+
+    return START_NOT_STICKY;
+  }
+
+  private void createForeGroundNotification(Context context) {
     ensureNotificationChannelExists();
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context,NOTIFICATION_CHANNEL_ID)
       .setSmallIcon(R.drawable.ic_launcher_background)
@@ -50,17 +58,7 @@ public class ObserverService extends Service {
     Notification notification = builder.build();
     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
     notificationManager.notify(1, notification);
-
-
     startForeground(1, notification);
-    //do heavy work on a background thread
-    //stopSelf();
-
-    directoryFileObserver = new DirectoryFileObserver(Environment.getExternalStorageDirectory().toString()+ "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json", context);
-    ;//"/storage/Documents/Test");
-    System.out.println(Files.isDirectory(Paths.get(Environment.getExternalStorageDirectory().toString()+ "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json")));
-    directoryFileObserver.startWatching();
-    return START_NOT_STICKY;
   }
 
   private void ensureNotificationChannelExists() {
