@@ -43,7 +43,9 @@ class DirectoryFileObserver(path: String, var context: Context) : FileObserver(p
       throw e
     }
   }
+    @RequiresApi(Build.VERSION_CODES.S)
     fun createNotification(hour: Int, minute: Int, text: String) {
+      println("create notification" + text + hour + minute);
       var reqId = ++activeReminderManager.counter;
       val calendar: Calendar = Calendar.getInstance()
       calendar.setTimeInMillis(System.currentTimeMillis())
@@ -52,18 +54,19 @@ class DirectoryFileObserver(path: String, var context: Context) : FileObserver(p
       val notificationIntent = Intent(context, ReminderBroadcast::class.java)
       notificationIntent.putExtra(ReminderBroadcast.NOTIFICATION_CHANNEL_ID, reqId)
       notificationIntent.putExtra(ReminderBroadcast.NOTIFICATION_CHANNEL, text)
-      val pendingIntent = PendingIntent.getBroadcast(context, reqId, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+      val pendingIntent = PendingIntent.getBroadcast(context, reqId, notificationIntent, PendingIntent.FLAG_MUTABLE);
       val alarmManager = (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?)!!
       alarmManager.set(AlarmManager.RTC_WAKEUP , calendar.timeInMillis , pendingIntent) ;
       this.activeReminderManager.createNotification(reqId);
     }
 
+  @SuppressLint("UnspecifiedImmutableFlag")
   fun cancelAllNotification() {
     this.activeReminderManager.getAllAlarm().forEach {
       val notificationIntent = Intent(context, ReminderBroadcast::class.java)
       notificationIntent.putExtra(ReminderBroadcast.NOTIFICATION_CHANNEL_ID, it)
       notificationIntent.putExtra(ReminderBroadcast.NOTIFICATION_CHANNEL, "")
-      val pendingIntent = PendingIntent.getBroadcast(context, it, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+      val pendingIntent = PendingIntent.getBroadcast(context, it, notificationIntent, PendingIntent.FLAG_MUTABLE);
       pendingIntent.cancel();
     }
     this.activeReminderManager.list = ArrayList();
@@ -82,10 +85,7 @@ class DirectoryFileObserver(path: String, var context: Context) : FileObserver(p
 
     val reader: Reader =
       Files.newBufferedReader(
-        Paths.get(
-          Environment.getExternalStorageDirectory()
-            .toString() + "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json"
-        )
+        Paths.get(aboslutePath)
       );
     val data: ObsidianData = gson.fromJson(reader, ObsidianData::class.java)
     reader.close();

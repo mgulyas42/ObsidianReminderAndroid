@@ -6,30 +6,18 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.os.FileObserver;
 import android.os.IBinder;
-import android.provider.MediaStore;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.example.obsidianreminderandroid.R;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 public class ObserverService extends Service {
   public static final String CHANNEL_ID = "ForegroundServiceChannel";
   String NOTIFICATION_CHANNEL_ID = "OBSIDIAN_TASK_NOTIFICATIONS_ID";
-  private DirectoryFileObserver directoryFileObserver  = null;
+
   @Override
   public void onCreate() {
     super.onCreate();
@@ -38,12 +26,14 @@ public class ObserverService extends Service {
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     Context context = this;
-
-    ensureNotificationChannelExists();
-    this.createForeGroundNotification(context);
-
-    directoryFileObserver = new DirectoryFileObserver(Environment.getExternalStorageDirectory().toString()+ "/Test/Obsidian/SecondBrain/.obsidian/plugins/obsidian-reminder-plugin/data.json", context);
-    directoryFileObserver.startWatching();
+    String path = "";
+    if (intent.hasExtra("dataUri")) {
+      path = intent.getStringExtra("dataUri");
+      ensureNotificationChannelExists();
+      this.createForeGroundNotification(context);
+      DirectoryFileObserver directoryFileObserver = new DirectoryFileObserver(path, context);
+      directoryFileObserver.startWatching();
+    }
 
     return START_NOT_STICKY;
   }
